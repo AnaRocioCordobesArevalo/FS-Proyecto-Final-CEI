@@ -19,7 +19,8 @@ export async function GET() {
         //manejo de errores
     } catch (error) {
         console.error(error);
-        return new Response(JSON.stringify({ success: false, error: error.message }), {
+        return new Response(JSON.stringify({ success: false, error: error.message }), 
+        {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
         });

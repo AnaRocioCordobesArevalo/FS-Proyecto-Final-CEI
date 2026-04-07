@@ -19,7 +19,7 @@ export async function connectDB() {
         cached.promise = mongoose.connect(MONGODB_URL, {
             bufferCommands: false
         }).then((mongooseInstance) => {
-            console.log("✅ Conectado a MongoDB");
+            console.log("Conectado a MongoDB W//W");
             return mongooseInstance;
         });
     }

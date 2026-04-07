@@ -1,7 +1,7 @@
 //importamos mongoose para que se conecte con el modelo
 import mongoose from "mongoose";
 
-const userSchema = new mongoose.Schema({
+const usersSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true
@@ -24,4 +24,4 @@ const userSchema = new mongoose.Schema({
     }
 });
 //Tabla donde te lo guarda 
-export default mongoose.models.User || mongoose.model ("User", userSchema);
+export default mongoose.models.User || mongoose.model ("Users", usersSchema);
