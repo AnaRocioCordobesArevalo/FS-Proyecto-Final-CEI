@@ -1,6 +1,6 @@
 //importamos mongoose para que se conecte con el modelo
 import mongoose from "mongoose";
-
+//Como vamos a estrucutrar la base de datos
 const usersSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -24,4 +24,4 @@ const usersSchema = new mongoose.Schema({
     }
 });
 //Tabla donde te lo guarda 
-export default mongoose.models.User || mongoose.model ("Users", usersSchema);
+export default mongoose.models.Users || mongoose.model ("Users", usersSchema);
