@@ -1,55 +1,37 @@
-/* Aquí hay que poner toda la parte del CRUD para manejar todo el resto de los usuarios  */
-// importación de la conexión de mongoose
-import {connectDB} from "@/lib/mongoose";
-// importación del modelo en este caso de los usuarios
+import { connectDB } from "@/lib/mongoose";
 import Users from "@/models/Users";
 import { NextResponse } from "next/server";
 
-// Empezamos el crud y se va dividir en 2 para que en una parte 
-// se pueda buscar un usuario y en otro crud otros usuarios
-
-//Buscar usuario
+// Buscar todos los usuarios
 export async function GET() {
-    try{
+    try {
         await connectDB();
         const users = await Users.find({});
-        
         return NextResponse.json(users);
     } catch (error) {
-        return NextResponse.json({ error: 'Error al cargar los usuarios'}, {status: 500});
+        return NextResponse.json(
+            { error: "Error al cargar los usuarios" },
+            { status: 500 }
+        );
     }
 }
-// Crear usuario
-export async function POST(){
-    try{
+
+// Crear un usuario
+export async function POST(request) {
+    try {
         await connectDB();
         const body = await request.json();
-        //la estructura de lo que tiene que crear en caso de usuarios 
-        const newUser = await Users.create({name: body.name, email: body.email, password: body.password})
-        return NextResponse.json(newUser)
-    } catch (error){ //Mensaje de error al guardar
-        return NextResponse.json({error: 'Error al guardar'})
-    }
-}
-export async function PUT(){
-    try{
-        await connectDB();
-        const body = await request.json();
-        //la estructura de lo que tiene que crear en caso de usuarios 
-        const newUser = await Users.create({name: body.name, email: body.email, password: body.password})
-        return NextResponse.json(newUser)
-    } catch (error){ //Mensaje de error al guardar
-        return NextResponse.json({error: 'Error al guardar'})
-    }
-}
-export async function DELETE(){
-    try{
-        await DELETE();
-        const body = await request.json();
-        //la estructura de lo que tiene que crear en caso de usuarios 
-        const newUser = await Users.create({name: body.name, email: body.email, password: body.password})
-        return NextResponse.json(newUser)
-    } catch (error){ //Mensaje de error al guardar
-        return NextResponse.json({error: 'Error al guardar'})
+        const newUser = await Users.create({
+            name: body.name,
+            email: body.email,
+            password: body.password,
+            is_admin: body.is_admin,
+        });
+        return NextResponse.json(newUser, { status: 201 });
+    } catch (error) {
+        return NextResponse.json(
+            { error: `Error al guardar: ${error.message}` },
+            { status: 500 }
+        );
     }
 }
