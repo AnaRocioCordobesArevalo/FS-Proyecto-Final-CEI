@@ -2,19 +2,20 @@ import { connectDB } from "@/lib/mongoose";
 import Books from "@/models/Books";
 import { NextResponse } from "next/server";
 
-// Actualizar un libro → PUT 
+// Actualizar un libro → PUT /api/books/123
 export async function PUT(request, { params }) {
     try {
         await connectDB();
+        const { id } = await params; // ✅ await params por Next.js 15
         const body = await request.json();
         const updatedBook = await Books.findByIdAndUpdate(
-            params.id,
+            id,
             {
                 tittle: body.tittle,
                 category: body.category,
                 author: body.author,
             },
-            { new: true } // devuelve el documento ya actualizado
+            { new: true }
         );
 
         if (!updatedBook) {
@@ -33,11 +34,12 @@ export async function PUT(request, { params }) {
     }
 }
 
-// Borrar un libro → DELETE 
+// Borrar un libro → DELETE /api/books/123
 export async function DELETE(request, { params }) {
     try {
-        await connectDB(); //antes llamaba a DELETE() recursivamente
-        const deletedBook = await Books.findByIdAndDelete(params.id);
+        await connectDB();
+        const { id } = await params; // ✅ await params por Next.js 15
+        const deletedBook = await Books.findByIdAndDelete(id);
 
         if (!deletedBook) {
             return NextResponse.json(
