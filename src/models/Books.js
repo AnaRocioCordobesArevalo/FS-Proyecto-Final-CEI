@@ -1,5 +1,4 @@
-//importamos mongoose para que se conecto con el modelo
-import mongoose, { trusted } from "mongoose";
+import mongoose from "mongoose";
 
 const booksSchema = new mongoose.Schema({
     tittle: {
@@ -7,7 +6,8 @@ const booksSchema = new mongoose.Schema({
         required: true
     },
     category: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Category",
         required: true
     },
     author: {
@@ -16,6 +16,4 @@ const booksSchema = new mongoose.Schema({
     }
 });
 
-//Tabla donde te lo guarda
-export default mongoose.models.Books || mongoose.model ("Books", booksSchema);
-
+export default mongoose.models.Books || mongoose.model("Books", booksSchema);
