@@ -1,5 +1,7 @@
 import { connectDB } from "@/lib/mongoose";
-import Exchange from "@/models/Exhanges";
+import Exchange from "@/models/Exchange";
+import Users from "@/models/Users";
+import Books from "@/models/Books";
 import { NextResponse } from "next/server";
 
 export async function GET() {
