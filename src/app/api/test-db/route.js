@@ -26,3 +26,7 @@ export async function GET() {
         });
     }
 }
+
+//Este test es para ver si se comunicaba bien los modelos y las conexiones, estaban bien. 
+//Debido a que en mongoose compass, no me aparecia la tabla en el servidor y ni el local, por lo que con el test, verifique que
+// lo que fallaba era mongoose
