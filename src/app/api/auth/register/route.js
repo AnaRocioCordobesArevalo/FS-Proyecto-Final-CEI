@@ -1,28 +1,30 @@
-import { connectDB } from "@/lib/mongoose";
-import Users from "@/models/Users";
-import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
+import { connectDB } from "@/lib/mongoose"; //La conexión a mongoose
+import Users from "@/models/Users"; //La importación de los modelos 
+import { NextResponse } from "next/server"; //Permite definir una lógica del registro
+import bcrypt from "bcryptjs"; //Libreria para comprar contraseñas encriptadas
 
-export async function POST(request) {
+
+//Para crear un registro necesitamos el POST, aunque, podemos mirarlo antes en el GET
+export async function POST(request) { //La peticiones 
     try {
         await connectDB();
-        const body = await request.json();
+        const body = await request.json(); 
 
         // Verificar si el email ya existe
-        const existingUser = await Users.findOne({ email: body.email });
+        const existingUser = await Users.findOne({ email: body.email }); //compara
         if (existingUser) {
             return NextResponse.json(
-                { error: "El email ya está registrado" },
-                { status: 400 }
+                { error: "El email ya está registrado" }, //Lo que devuelve en el caso de que tengamos registrado ese email
+                { status: 400 } //Manejo de errores 
             );
         }
 
-        // Encriptar la contraseña
+        // Encriptar la contraseña (taparlo con puntitos)
         const hashedPassword = await bcrypt.hash(body.password, 10);
 
         // Crear el usuario con la contraseña encriptada
         const newUser = await Users.create({
-            name: body.name,
+            name: body.name, //modelo
             email: body.email,
             password: hashedPassword,
             is_admin: false // por defecto no es admin
@@ -35,7 +37,7 @@ export async function POST(request) {
     } catch (error) {
         return NextResponse.json(
             { error: `Error al registrar: ${error.message}` },
-            { status: 500 }
+            { status: 500 } //Manejo de errores 
         );
     }
 }
