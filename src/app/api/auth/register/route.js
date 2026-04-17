@@ -1,40 +1,46 @@
-import { connectDB } from "@/lib/mongoose"; //La conexión a mongoose
-import Users from "@/models/Users"; //La importación de los modelos 
-import { NextResponse } from "next/server"; //Permite definir una lógica del registro
-import bcrypt from "bcryptjs"; //Libreria para comprar contraseñas encriptadas
+import { connectDB } from "@/lib/mongoose"; //conexión con mongoose
+import Users from "@/models/Users"; //modelo de usuario
+import { NextResponse } from "next/server"; //la lógica 
+import bcrypt from "bcryptjs"; //para que no se vea la contraseña 
 
-
-//Para crear un registro necesitamos el POST, aunque, podemos mirarlo antes en el GET
-export async function POST(request) { //La peticiones 
+export async function POST(request) {
     try {
         await connectDB();
-        const body = await request.json(); 
+        const body = await request.json();
 
-        // Verificar si el email ya existe
-        const existingUser = await Users.findOne({ email: body.email }); //compara
+        //Validar que el email no exista ya
+        const emailNormalizado = body.email.toLowerCase().trim();
+        const existingUser = await Users.findOne({ email: emailNormalizado });
+        //En el caso de que exista el correo 
         if (existingUser) {
-            return NextResponse.json(
-                { error: "El email ya está registrado" }, //Lo que devuelve en el caso de que tengamos registrado ese email
-                { status: 400 } //Manejo de errores 
+            return NextResponse.json( //Manejo de errores 
+                { error: "El email ya está registrado" },
+                { status: 400 }
             );
         }
 
-        // Encriptar la contraseña (taparlo con puntitos)
-        const hashedPassword = await bcrypt.hash(body.password, 10);
+        //ENCRIPTAR la contraseña (El paso clave)
+        // Usamos un "salt" de 10 para que sea seguro pero rápido
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(body.password, salt);
 
-        // Crear el usuario con la contraseña encriptada
+        //Crear el usuario con la contraseña encriptada
         const newUser = await Users.create({
-            name: body.name, //modelo
-            email: body.email,
-            password: hashedPassword,
-            is_admin: false // por defecto no es admin
+            name: body.name,
+            email: emailNormalizado,
+            password: hashedPassword, // <--- Guardamos el hash ($2a$...)
+            is_admin: false
         });
 
-        // No devolver la contraseña en la respuesta
+        //Respuesta de éxito (sin enviar la contraseña de vuelta)
         const { password, ...userWithoutPassword } = newUser.toObject();
 
-        return NextResponse.json(userWithoutPassword, { status: 201 });
-    } catch (error) {
+        return NextResponse.json(
+            { message: "Usuario creado correctamente", user: userWithoutPassword },
+            { status: 201 } //Para que salga que se ha hecho el proceso correctamente 
+        );
+
+    } catch (error) { //En el caso de que haya un error
         return NextResponse.json(
             { error: `Error al registrar: ${error.message}` },
             { status: 500 } //Manejo de errores 

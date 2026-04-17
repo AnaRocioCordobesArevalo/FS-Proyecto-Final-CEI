@@ -14,12 +14,17 @@ const booksSchema = new mongoose.Schema({
         ref: "Category",
         required: [true, "La categoría es obligatoria"]
     },
-    author: {
+    author: { 
         type: String,
         required: [true, "El autor es obligatorio"],
         minlength: [3, "El autor debe tener mínimo 3 caracteres"],
         maxlength: [50, "El autor no puede superar 50 caracteres"],
         trim: true
+    },
+    owner: {
+        type: mongoose.Schema.Types.ObjectId, // se identifique con la id quien publico ese libro
+        ref: "Users",
+        required: true  //para ver quien publico el libro
     }
 });
 //Tabla donde te lo guarda  o que crea el modelo

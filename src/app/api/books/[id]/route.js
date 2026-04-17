@@ -1,66 +1,88 @@
-//importamos la conexiones, los models y el server
+//La importaciones tanto de la conexión de mongoose, como de los modelos y del server.
 import { connectDB } from "@/lib/mongoose";
 import Books from "@/models/Books";
 import Category from "@/models/Category";
 import { NextResponse } from "next/server";
-////PUT y DELETE, esta separado del GET y del POST
+
+//Tenemos separados los GET Y POST y tenemos el  PUT junto el DELETE.
 
 
-
-// Actualizar un libro ->  PUT /api/books/id
-//Postman: poner la url/api/books/ id para que actualice 
+//Para Actualizar los libros
 export async function PUT(request, { params }) {
     try {
         await connectDB();
         const { id } = await params;
         const body = await request.json();
+
+        // Obtener el usuario del header
+        const user = JSON.parse(request.headers.get("user"));
+
+        // Buscar el libro
+        const book = await Books.findById(id);
+        if (!book) { //En el caso de que no se encuentre el libro 
+            return NextResponse.json(
+                { error: "Libro no encontrado" },
+                { status: 404 }
+            );
+        }
+        // Verificar que sea el dueño o admin
+        if (book.owner.toString() !== user.id && !user.is_admin) {
+            return NextResponse.json( //Manejo de errores y lo que devuelve
+                { error: "No autorizado - No eres el dueño del libro" },
+                { status: 403 }
+            );
+        }
+
         const updatedBook = await Books.findByIdAndUpdate(
             id,
-            { //Estructura de la base de datos de libros, es decir, el modelo
+            {
                 tittle: body.tittle,
-                category: body.category, // FK de categorias
+                category: body.category, //modelo
                 author: body.author,
             },
             { new: true }
-        ).populate("category"); // devuelve el nombre de la categoría
-        //Si no se puede encontrar el libro
-        if (!updatedBook) {
-            return NextResponse.json(
-                { error: "Libro no encontrado" },
-                { status: 404 } //Manejo de errores
-            );
-        }
-        //En el caso de que no se pueda actualizar el libro
+        ).populate("category");
+        //En el caso de que no se actualice 
         return NextResponse.json(updatedBook);
-    } catch (error) {
+    } catch (error) { //Manejo de errres 
         return NextResponse.json(
             { error: `Error al actualizar: ${error.message}` },
-            { status: 500 } //Manejo de errores
+            { status: 500 }
         );
     }
 }
 
-// Borrar un libro -> DELETE /api/books/id
-//En Postman: hay que poner la url/api/books/ id del libro que queremos eliminar 
 export async function DELETE(request, { params }) {
     try {
         await connectDB();
         const { id } = await params;
-        const deletedBook = await Books.findByIdAndDelete(id); //Que encuentre la id y lo borre
-        //En el caso que no encuentre el libro
-        if (!deletedBook) {
-            return NextResponse.json(
+
+        // Obtener el usuario del header
+        const user = JSON.parse(request.headers.get("user"));
+
+        // Buscar el libro
+        const book = await Books.findById(id);
+        if (!book) {
+            return NextResponse.json( //Manejo de errores 
                 { error: "Libro no encontrado" },
-                { status: 404 } //Manejo de errores
+                { status: 404 }
             );
         }
-        //Verificación de que el libro ha sido eliminado
+
+        // Verificar que sea el dueño o admin
+        if (book.owner.toString() !== user.id && !user.is_admin) {
+            return NextResponse.json( //Manejo de error
+                { error: "No autorizado - No eres el dueño del libro" },
+                { status: 403 }
+            );
+        }
+
+        await Books.findByIdAndDelete(id);
         return NextResponse.json({ message: "Libro eliminado correctamente" });
     } catch (error) {
-        //En el caso de error al borrar un libro
-        return NextResponse.json(
+        return NextResponse.json( //Manejo de error 
             { error: `Error al borrar: ${error.message}` },
-            { status: 500 } //Manejo de errores
+            { status: 500 }
         );
     }
 }

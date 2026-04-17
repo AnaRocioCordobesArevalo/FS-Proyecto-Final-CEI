@@ -2,48 +2,54 @@ import { NextResponse } from "next/server";
 import { authMiddleware, adminMiddleware } from "./middlewares/auth.js";
 import { notFoundMiddleware } from "./middlewares/404.js";
 
-// 1. DEFINIR LAS RUTAS (Esto es lo que falta o está mal ubicado)
-const protectedRoutes = [
-    "/api/exchanges",
-    "/api/books",
-    "/api/categories",
-];
-
-const adminRoutes = [
-    "/api/users",
-];
+// Rutas accesibles por cualquier usuario logueado
+const protectedRoutes = ["/api/exchanges", "/api/categories", "/api/books"];
+// Rutas exclusivas para administradores
+const adminRoutes = ["/api/users"];
 
 export async function proxy(request) {
     const { pathname } = request.nextUrl;
 
-    // 2. DEFINIR LAS CONSTANTES DE COMPROBACIÓN
-    const isProtectedRoute = protectedRoutes.some(route =>
-        pathname.startsWith(route)
-    );
-    const isAdminRoute = adminRoutes.some(route =>
-        pathname.startsWith(route)
-    );
+    // --- BLOQUE CORS ---
+    //Definimos qué dominios, métodos y cabeceras permitimos.
+    const corsHeaders = {
+        "Access-Control-Allow-Origin": "*", 
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    };
 
-    // 3. LÓGICA DE REDIRECCIÓN / FILTRADO
+    // El navegador envía un OPTIONS antes de un POST/PUT con headers personalizados.
+    if (request.method === "OPTIONS") {
+        return new NextResponse(null, { status: 204, headers: corsHeaders });
+    }
+    // Identificamos el tipo de ruta según las listas
+    const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+    const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route));
+
+    let response;
+
+    // Lógica de rutas 
     if (!isProtectedRoute && !isAdminRoute && pathname.startsWith("/api")) {
-        return notFoundMiddleware();
-    }
-
-    if (isAdminRoute) {
+        // Si la ruta empieza con /api pero no está en nuestras listas, lanzamos 404
+        response = notFoundMiddleware();
+    } else if (isAdminRoute) {
         const authResult = await authMiddleware(request);
-        // Si el auth falla (401), devolvemos el error de una vez
         if (authResult.status === 401) return authResult;
-        // Si el auth pasa, verificamos si es admin
-        return adminMiddleware(request);
+        response = await adminMiddleware(request);
+    } else if (isProtectedRoute) {
+        response = await authMiddleware(request);
+    } else {
+        response = NextResponse.next();
     }
 
-    if (isProtectedRoute) {
-        return authMiddleware(request);
-    }
+    // 3. Inyectar headers de CORS a la respuesta final
+    Object.entries(corsHeaders).forEach(([key, value]) => {
+        response.headers.set(key, value);
+    });
 
-    return NextResponse.next();
+    return response;
 }
-
+// Configuración del matcher 
 export const config = {
     matcher: [
         "/api/users/:path*",
