@@ -1,6 +1,7 @@
-//Importamos mongoose
+// Importamos mongoose
 import mongoose from "mongoose";
-//Estructura de la base de datos
+
+// Estructura de la base de datos
 const booksSchema = new mongoose.Schema({
     tittle: {
         type: String,
@@ -21,11 +22,23 @@ const booksSchema = new mongoose.Schema({
         maxlength: [50, "El autor no puede superar 50 caracteres"],
         trim: true
     },
+    image: {
+        type: String, // Aquí se guardará la cadena Base64 (el texto de la imagen) //Tengo que buscarlo
+        required: false // Puedes cambiarlo a true si quieres que la foto sea obligatoria
+    },
     owner: {
-        type: mongoose.Schema.Types.ObjectId, // se identifique con la id quien publico ese libro
+        type: mongoose.Schema.Types.ObjectId, 
         ref: "Users",
-        required: true  //para ver quien publico el libro
+        required: true  
+    },
+    status: {
+        type: String,
+        enum: ["disponible", "intercambiado", "reservado"],
+        default: "disponible"
     }
+}, { 
+    timestamps: true // Esto añade automáticamente campos de "creado el" y "actualizado el"
 });
-//Tabla donde te lo guarda  o que crea el modelo
+
+// Tabla donde te lo guarda o que crea el modelo
 export default mongoose.models.Books || mongoose.model("Books", booksSchema);
