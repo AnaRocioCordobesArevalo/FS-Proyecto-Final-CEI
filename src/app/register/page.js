@@ -35,7 +35,6 @@ export default function RegisterPage() {
                 throw new Error(data.error || "Error al registrarse");
             }
 
-            // Registro exitoso -> Redirigimos al login para que entre
             router.push("/login?success=true");
         } catch (err) {
             setError(err.message);
@@ -45,49 +44,62 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="flex min-h-[calc(100vh-64px)] items-center justify-center bg-gray-50 p-4">
-            <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-lg border border-gray-100">
-                <h2 className="mb-2 text-center text-3xl font-bold text-gray-900">Crear cuenta</h2>
-                <p className="mb-8 text-center text-gray-500">Únete para gestionar tus libros</p>
+        <div className="flex min-h-screen items-center justify-center bg-black p-6">
+            {/* RECUADRO CON FONDO DIFERENTE */}
+            <div className="w-full max-w-md bg-[#0a0a0a] border border-gray-900 rounded-2xl p-10 shadow-2xl">
+                
+                {/* TÍTULO INTERNO */}
+                <div className="">
+                    <h1 className="font-serif-logo text-3xl mb-1 text-white">Únete</h1>
+                    <p className="text-[9px] uppercase tracking-[0.4em] text-gray-500 font-bold">
+                        Crea tu biblioteca personal
+                    </p>
+                </div>
 
                 {error && (
-                    <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-600 border border-red-200">
+                    <div className="mb-6 border border-red-900/30 bg-red-950/10 p-4 text-[10px] uppercase tracking-widest text-red-500 font-bold">
                         {error}
                     </div>
                 )}
 
-                <form onSubmit={handleRegister} className="space-y-5">
-                    <div>
-                        <label className="block text-sm font-semibold text-gray-700">Nombre completo</label>
+                <form onSubmit={handleRegister} className="space-y-8">
+                    <div className="group">
+                        <label className="block text-[9px] uppercase tracking-[0.2em] text-gray-600 font-black mb-2">
+                            Nombre Completo
+                        </label>
                         <input
                             name="name"
                             type="text"
                             onChange={handleChange}
-                            className="mt-1 w-full rounded-lg border border-gray-300 p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
-                            placeholder="Tu nombre"
+                            className="w-full bg-transparent border-b border-gray-800 py-2 outline-none focus:border-white transition-colors text-sm text-white placeholder:text-gray-900"
+                            placeholder="TU NOMBRE"
                             required
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-semibold text-gray-700">Email</label>
+                    <div className="group">
+                        <label className="block text-[9px] uppercase tracking-[0.2em] text-gray-600 font-black mb-2">
+                            Email
+                        </label>
                         <input
                             name="email"
                             type="email"
                             onChange={handleChange}
-                            className="mt-1 w-full rounded-lg border border-gray-300 p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
-                            placeholder="correo@ejemplo.com"
+                            className="w-full bg-transparent border-b border-gray-800 py-2 outline-none focus:border-white transition-colors text-sm text-white placeholder:text-gray-900"
+                            placeholder="CORREO@EJEMPLO.COM"
                             required
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-semibold text-gray-700">Contraseña</label>
+                    <div className="group">
+                        <label className="block text-[9px] uppercase tracking-[0.2em] text-gray-600 font-black mb-2">
+                            Contraseña
+                        </label>
                         <input
                             name="password"
                             type="password"
                             onChange={handleChange}
-                            className="mt-1 w-full rounded-lg border border-gray-300 p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
+                            className="w-full bg-transparent border-b border-gray-800 py-2 outline-none focus:border-white transition-colors text-sm text-white placeholder:text-gray-900"
                             placeholder="••••••••"
                             required
                         />
@@ -96,16 +108,16 @@ export default function RegisterPage() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full rounded-lg bg-blue-600 py-3 text-white font-semibold hover:bg-blue-700 transition-colors disabled:bg-blue-300"
+                        className="w-full bg-white text-black py-4 rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-gray-200 transition-all active:scale-[0.98] disabled:bg-gray-800 shadow-xl mt-4"
                     >
-                        {loading ? "Registrando..." : "Registrarse"}
+                        {loading ? "PROCESANDO..." : "REGISTRARSE"}
                     </button>
                 </form>
 
-                <p className="mt-6 text-center text-sm text-gray-600">
-                    ¿Ya tienes cuenta?{" "}
-                    <Link href="/login" className="font-bold text-blue-600 hover:underline">
-                        Inicia sesión aquí
+                <p className="mt-10 text-center text-[9px] uppercase tracking-[0.2em] text-gray-700">
+                    ¿Ya eres miembro?{" "}
+                    <Link href="/login" className="font-bold text-white hover:underline ml-1">
+                        Login
                     </Link>
                 </p>
             </div>

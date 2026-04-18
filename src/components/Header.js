@@ -1,63 +1,84 @@
 "use client";
-import { useEffect, useState } from "react";
-import Link from "next/link"; // Importante para la navegación
+import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function Header() {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [mounted, setMounted] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
     const router = useRouter();
 
-    useEffect(() => {
-        setMounted(true);
-        const token = localStorage.getItem("token");
-        setIsLoggedIn(!!token);
-    }, []);
-
     const handleLogout = () => {
+        setMenuOpen(false);
+        // Borramos el rastro de sesión (puedes ajustar esto según tu lógica)
         localStorage.removeItem("token");
-        setIsLoggedIn(false);
-        router.push("/login");
+        router.push("/books");
     };
 
-    
-    if (!mounted) {
-        return <header className="bg-green-300 border-b h-16 w-full"></header>;
-    }
-
     return (
-        <header className="bg-green shadow-sm border-b w-full">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <header className="bg-black text-white border-b border-gray-900 p-5 px-8 sticky top-0 z-50 shadow-2xl">
+            <div className="max-w-7xl mx-auto flex items-center justify-between relative">
                 
-                {/* LADO IZQUIERDO: LOGO */}
-                <div className="flex-shrink-0">
-                    <Link href="/" className="text-2xl font-bold text-black-600">
-                        Metamorfosis
+                {/* --- LADO IZQUIERDO: Navegación Principal --- */}
+                <div className="flex items-center gap-8 text-[11px] uppercase tracking-[0.2em] font-medium text-gray-400">
+                    <Link href="/books" className="hover:text-white transition-colors duration-200">
+                        Inicio
+                    </Link>
+                    <Link href="/exchanges" className="hover:text-white transition-colors duration-200">
+                        Intercambios
                     </Link>
                 </div>
 
-                {/* LADO DERECHO: NAVEGACIÓN */}
-                <nav className="flex items-center space-x-4">
-                    <Link href="/books" className="text-gray-600 hover:text-blue-600 px-3 py-2 font-medium">
-                        Libros
-                    </Link>
+                {/* --- CENTRO: Título Principal con la nueva clase de fuente --- */}
+                <Link href="/books" className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center group">
+                    <span className="font-serif-logo text-4xl md:text-5xl font-light tracking-tight leading-none text-white">
+                        Metamorfosis
+                    </span>
+                    <span className="text-[10px] uppercase tracking-[0.4em] text-gray-500 font-bold mt-1 group-hover:text-indigo-400 transition-colors">
+                        Book
+                    </span>
+                </Link>
 
-                    {isLoggedIn ? (
-                        <button
-                            onClick={handleLogout}
-                            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium transition"
+                {/* --- LADO DERECHO: Cuenta y Botón de Acción --- */}
+                <div className="flex items-center gap-6">
+                    
+                    {/* Menú Desplegable (Carrusel de opciones) */}
+                    <div className="relative">
+                        <button 
+                            onClick={() => setMenuOpen(!menuOpen)}
+                            className="text-[11px] uppercase tracking-[0.2em] font-bold text-gray-300 hover:text-white transition-colors"
                         >
-                            Cerrar Sesión
+                            Cuenta
                         </button>
-                    ) : (
-                        <Link
-                            href="/login"
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition"
-                        >
-                            Perfil
-                        </Link>
-                    )}
-                </nav>
+
+                        {/* El desplegable estilo Dark Premium */}
+                        {menuOpen && (
+                            <div className="absolute right-0 mt-5 w-52 bg-[#0a0a0a] border border-gray-800 rounded-xl shadow-2xl py-3 z-50 animate-in fade-in zoom-in duration-150 origin-top-right">
+                                <Link 
+                                    href="/profile" 
+                                    onClick={() => setMenuOpen(false)}
+                                    className="block px-6 py-3 text-[11px] uppercase tracking-wider text-gray-400 hover:bg-white hover:text-black transition-all duration-200"
+                                >
+                                    Mi Perfil
+                                </Link>
+                                <hr className="border-gray-900 my-1" />
+                                <button 
+                                    onClick={handleLogout}
+                                    className="w-full text-left px-6 py-3 text-[11px] uppercase tracking-wider text-red-500 hover:bg-red-950/20 font-bold transition-all"
+                                >
+                                    Cerrar Sesión
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Botón Estilo Oatmeal (Pill Button) */}
+                    <Link 
+                        href="/add-book" 
+                        className="bg-white text-black px-7 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.15em] hover:bg-gray-200 transition-all shadow-md active:scale-95"
+                    >
+                        Empezar
+                    </Link>
+                </div>
             </div>
         </header>
     );
