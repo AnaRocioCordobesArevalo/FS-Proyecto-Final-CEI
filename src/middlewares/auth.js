@@ -1,38 +1,75 @@
 import { NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 
+/**
+ * FUNCIÓN PRIVADA: Extrae y verifica el JWT
+ * Soporta Header (Bearer Token) y Cookies (Next.js Navigation)
+ */
 async function verifyToken(request) {
     const authHeader = request.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
+    
+    // 1. Intentamos obtener el token del Header (para peticiones fetch/API)
+    let token = authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
 
-    const token = authHeader.split(" ")[1];
+    // 2. Si no hay Header, lo buscamos en las Cookies (para navegación de páginas)
+    if (!token) {
+        token = request.cookies.get("token")?.value;
+    }
+
+    if (!token) return null;
+
     try {
         const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET);
         const { payload } = await jwtVerify(token, secret);
         return payload;
     } catch (error) {
-        console.error("Error verificando token:", error.message);
+        console.error("JWT Verification Error:", error.message);
         return null;
     }
 }
 
+/**
+ * MIDDLEWARE PARA USUARIOS AUTENTICADOS
+ */
 export async function authMiddleware(request) {
     const payload = await verifyToken(request);
+    
     if (!payload) {
-        return NextResponse.json({ error: "Token inválido o requerido" }, { status: 401 });
+        // Si es una petición de API, devolvemos JSON
+        if (request.nextUrl.pathname.startsWith("/api/")) {
+            return NextResponse.json({ error: "Token inválido o requerido" }, { status: 401 });
+        }
+        // Si es una página, el proxy se encargará de la redirección, 
+        // pero aquí retornamos null para indicar fallo.
+        return null;
     }
 
+    // Inyectamos los datos del usuario en los headers para que la API pueda usarlos
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("user", JSON.stringify(payload));
-    return NextResponse.next({ request: { headers: requestHeaders } });
+    
+    return NextResponse.next({
+        request: { headers: requestHeaders },
+    });
 }
 
+/**
+ * MIDDLEWARE PARA ADMINISTRADORES
+ */
 export async function adminMiddleware(request) {
     const payload = await verifyToken(request);
+    
     if (!payload || !payload.is_admin) {
-        return NextResponse.json({ error: "Acceso denegado" }, { status: 403 });
+        if (request.nextUrl.pathname.startsWith("/api/")) {
+            return NextResponse.json({ error: "Acceso denegado: Se requiere admin" }, { status: 403 });
+        }
+        return null;
     }
+
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("user", JSON.stringify(payload));
-    return NextResponse.next({ request: { headers: requestHeaders } });
+    
+    return NextResponse.next({
+        request: { headers: requestHeaders },
+    });
 }

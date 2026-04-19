@@ -1,24 +1,71 @@
 import { NextResponse } from "next/server";
+// En src/proxy.js o src/middleware/proxy.js
+import { authMiddleware, adminMiddleware } from "@/middlewares/auth";
 
-// 1. Quita "/api/books" de esta lista para que sea pública temporalmente
-const protectedRoutes = ["/api/exchanges", "/api/categories"]; 
-const adminRoutes = ["/api/users"];
+
+/**
+ * LISTAS DE ACCESO
+ */
+// Páginas que requieren inicio de sesión
+const protectedPages = ["/books", "/add-book", "/profile", "/exchanges"];
+
+// Rutas de API que requieren Token de usuario normal
+const protectedApiRoutes = ["/api/exchanges", "/api/categories", "/api/books"]; 
+
+// Rutas de API que requieren Token de Administrador
+const adminApiRoutes = ["/api/users"];
 
 export async function proxy(request) {
     const { pathname } = request.nextUrl;
 
-    const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
-    const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route));
+    // --- 1. PROTECCIÓN DE PÁGINAS (Frontend) ---
+    // Verificamos si la ruta actual es una de las páginas protegidas
+    const isProtectedPage = protectedPages.some(route => pathname.startsWith(route));
 
-    // Si la ruta NO está en las listas, Next.js la dejará pasar sin pedir token
-    if (!isProtectedRoute && !isAdminRoute) {
-        return NextResponse.next();
+    if (isProtectedPage) {
+        // En el frontend, el Middleware lee el token de las cookies
+        const token = request.cookies.get("token")?.value;
+
+        if (!token) {
+            // Si no hay token, redirigimos al Login
+            const loginUrl = new URL("/login", request.url);
+            // Opcional: guardamos la ruta a la que quería ir para volver luego
+            loginUrl.searchParams.set("redirect", pathname);
+            return NextResponse.redirect(loginUrl);
+        }
     }
 
-    // Aquí iría tu lógica de authMiddleware si la ruta fuera protegida...
-    return NextResponse.next(); 
+    // --- 2. PROTECCIÓN DE API (Backend) ---
+    const isProtectedApi = protectedApiRoutes.some(route => pathname.startsWith(route));
+    const isAdminApi = adminApiRoutes.some(route => pathname.startsWith(route));
+
+    // Si es una ruta de API para administradores
+    if (isAdminApi) {
+        return await adminMiddleware(request);
+    }
+
+    // Si es una ruta de API para usuarios logueados
+    if (isProtectedApi) {
+        return await authMiddleware(request);
+    }
+
+    // Si no es ninguna de las anteriores (ej: /login, /register, /), dejar pasar
+    return NextResponse.next();
 }
 
+/**
+ * CONFIGURACIÓN DEL MATCHER
+ * Define qué rutas activarán este archivo
+ */
 export const config = {
-    matcher: ["/api/books/:path*", "/api/categories/:path*"]
+    matcher: [
+        /*
+         * Coincidir con todas las rutas excepto:
+         * 1. _next/static (archivos estáticos)
+         * 2. _next/image (optimización de imágenes)
+         * 3. favicon.ico
+         * 4. Public (archivos en carpeta public como logos)
+         */
+        "/((?!_next/static|_next/image|favicon.ico|public).*)",
+    ],
 };
