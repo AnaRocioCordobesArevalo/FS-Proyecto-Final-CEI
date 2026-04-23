@@ -1,40 +1,39 @@
-"use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+"use client"; //permite que se usar los hooks 
+import { useState } from "react"; // Hooks de React para manejar el estado y efectos secundarios
+import { useRouter } from "next/navigation"; // Hook para redireccionar al usuario
+import Link from "next/link";//Componente de optimización entre las páginas
 
+//Gestiona la autentificación, almacenamiento de tokens y redirección.
 export default function LoginPage() {
+    //ESTADOS DE FORMULARIO
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
-    const [loading, setLoading] = useState(false);
-    const router = useRouter();
-
+    const [error, setError] = useState(""); // Para mostrar mensajes de error de la API
+    const [loading, setLoading] = useState(false); // Estado visual para el botón de envío
+    const router = useRouter(); // Instancia para navegar programáticamente
+    //Manejo el envio del formulario del login
     const handleLogin = async (e) => {
-        e.preventDefault();
+        e.preventDefault(); //Evita que la página se recargue
         setError("");
         setLoading(true);
 
         try {
+            // Petición POST al endpoint de autenticación
             const response = await fetch("/api/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),
             });
-
             const data = await response.json();
 
             if (!response.ok) {
                 throw new Error(data.error || "Error al iniciar sesión");
             }
-
-            // 1. VITAL PARA EL MIDDLEWARE: Guardar el token en Cookies
+            //VITAL PARA EL MIDDLEWARE: Guardar el token en Cookies
             document.cookie = `token=${data.token}; path=/; max-age=3600; samesite=strict`;
-
-            // 2. Guardar en localStorage (para uso interno de otros componentes)
+            //Guardar en localStorage (para uso interno de otros componentes)
             localStorage.setItem("token", data.token);
-
-            // 3. Redirigir a la biblioteca
+            //Redirigir a la biblioteca
             router.push("/books");
             router.refresh(); 
         } catch (err) {
@@ -43,27 +42,28 @@ export default function LoginPage() {
             setLoading(false);
         }
     };
-
+    //EL FRONTED 
     return (
         <div className="flex min-h-screen items-center justify-center bg-black p-6">
-            {/* RECUADRO ESTILO METAMORFOSIS */}
+            {/* CONTENEDOR PRINCIPAL */}
             <div className="w-full max-w-md bg-[#0a0a0a] border border-gray-900 rounded-2xl p-10 shadow-2xl">
                 
-                {/* TÍTULO CON LÍNEA LATERAL */}
+                {/* CABECERA: Título con diseño de marca*/}
                 <div className="text-left mb-10 border-l border-white pl-5">
                     <h1 className="font-serif-logo text-3xl mb-1 text-white">Entrar</h1>
                     <p className="text-[9px] uppercase tracking-[0.4em] text-gray-500 font-bold">
                         Continúa tu metamorfosis
                     </p>
                 </div>
-
+                {/* MENSAJE DE ERROR: Solo se muestra si el estado 'error' tiene contenido */}
                 {error && (
                     <div className="mb-6 border border-red-900/30 bg-red-950/10 p-4 text-[10px] uppercase tracking-widest text-red-500 font-bold text-center">
                         {error}
                     </div>
                 )}
-
+                {/* FORMULARIO DE ACCESO */}
                 <form onSubmit={handleLogin} className="space-y-8">
+                    {/* Campo Email */}
                     <div className="group">
                         <label className="block text-[9px] uppercase tracking-[0.2em] text-gray-600 font-black mb-2">
                             Email
@@ -77,7 +77,7 @@ export default function LoginPage() {
                             required
                         />
                     </div>
-
+                    {/* Campo Contraseña */}
                     <div className="group">
                         <label className="block text-[9px] uppercase tracking-[0.2em] text-gray-600 font-black mb-2">
                             Contraseña
@@ -91,16 +91,15 @@ export default function LoginPage() {
                             required
                         />
                     </div>
-
                     <button
                         type="submit"
                         disabled={loading}
                         className="w-full bg-white text-black py-4 rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-gray-200 transition-all active:scale-[0.98] disabled:bg-gray-800 shadow-xl mt-4"
-                    >
+                    > 
                         {loading ? "VERIFICANDO..." : "INICIAR SESIÓN"}
                     </button>
                 </form>
-
+                {/* LINK DE REGISTRO */}
                 <p className="mt-10 text-center text-[9px] uppercase tracking-[0.2em] text-gray-700">
                     ¿Aún no tienes cuenta?{" "}
                     <Link href="/register" className="font-bold text-white hover:underline ml-1">

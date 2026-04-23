@@ -2,7 +2,7 @@
 import mongoose from "mongoose";
 //tabla de base de datos
 const categorySchema = new mongoose.Schema({
-    name: {
+    name: { //La primay key, es el id que genera mongoose 
         type: String,
         required: true,
         unique: true

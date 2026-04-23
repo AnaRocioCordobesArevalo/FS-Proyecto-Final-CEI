@@ -1,87 +1,36 @@
-//La importaciones tanto de la conexión de mongoose, como de los modelos y del server.
-import { connectDB } from "@/lib/mongoose";
-import Books from "@/models/Books";
-import Category from "@/models/Category";
-import { NextResponse } from "next/server";
-
-//Tenemos separados los GET Y POST y tenemos el  PUT junto el DELETE.
-
-
-//Para Actualizar los libros
-export async function PUT(request, { params }) {
-    try {
-        await connectDB();
-        const { id } = await params;
-        const body = await request.json();
-
-        // Obtener el usuario del header
-        const user = JSON.parse(request.headers.get("user"));
-
-        // Buscar el libro
-        const book = await Books.findById(id);
-        if (!book) { //En el caso de que no se encuentre el libro 
-            return NextResponse.json(
-                { error: "Libro no encontrado" },
-                { status: 404 }
-            );
-        }
-        // Verificar que sea el dueño o admin
-        if (book.owner.toString() !== user.id && !user.is_admin) {
-            return NextResponse.json( //Manejo de errores y lo que devuelve
-                { error: "No autorizado - No eres el dueño del libro" },
-                { status: 403 }
-            );
-        }
-
-        const updatedBook = await Books.findByIdAndUpdate(
-            id,
-            {
-                tittle: body.tittle,
-                category: body.category, //modelo
-                author: body.author,
-            },
-            { new: true }
-        ).populate("category");
-        //En el caso de que no se actualice 
-        return NextResponse.json(updatedBook);
-    } catch (error) { //Manejo de errres 
-        return NextResponse.json(
-            { error: `Error al actualizar: ${error.message}` },
-            { status: 500 }
-        );
-    }
-}
-
+import { connectDB } from "@/lib/mongoose"; //La conexión de la base de datos, es decir, el mongoose
+import Books from "@/models/Books";//Los modelos de los libros de la base de datos
+import { NextResponse } from "next/server";//Herramienta para enviar respuestas HTTP
+//Definimos la función DELETE
 export async function DELETE(request, { params }) {
-    try {
+    try { //Se conecta con el Mongo (Base de datos)
         await connectDB();
-        const { id } = await params;
-
-        // Obtener el usuario del header
-        const user = JSON.parse(request.headers.get("user"));
-
-        // Buscar el libro
-        const book = await Books.findById(id);
-        if (!book) {
-            return NextResponse.json( //Manejo de errores 
-                { error: "Libro no encontrado" },
-                { status: 404 }
-            );
+        const { id } = await params; //Obtenemos la ID de los libros
+        //El Middleware/Proxy ya procesó el token
+        const userData = request.headers.get("user");
+        if (!userData) {
+            return NextResponse.json({ error: "No autorizado" }, { status: 401 });
         }
-
-        // Verificar que sea el dueño o admin
-        if (book.owner.toString() !== user.id && !user.is_admin) {
-            return NextResponse.json( //Manejo de error
-                { error: "No autorizado - No eres el dueño del libro" },
+        const user = JSON.parse(userData);
+        //Buscamos el libro por la id
+        const book = await Books.findById(id);
+        if (!book) { //En el caso de que no se encuente el libro, pues manda un mensaje
+            return NextResponse.json({ error: "Libro no encontrado" }, { status: 404 });
+        }
+        // LA KEY: Si es admin, pasa. Si no, debe ser el dueño.
+        const isOwner = book.owner.toString() === user.id;
+        const isAdmin = user.is_admin === true;
+        if (!isOwner && !isAdmin) { //En el caso de que usuario ordinario, pues no puede borrar el libro, en caso de que no sea admin
+            return NextResponse.json(
+                { error: "Permisos insuficientes para borrar este libro" }, //Manejo de errores 
                 { status: 403 }
             );
         }
-
-        await Books.findByIdAndDelete(id);
-        return NextResponse.json({ message: "Libro eliminado correctamente" });
-    } catch (error) {
-        return NextResponse.json( //Manejo de error 
-            { error: `Error al borrar: ${error.message}` },
+        await Books.findByIdAndDelete(id); //Cuando se completa la eliminación
+        return NextResponse.json({ message: "Metamorfosis completada: Libro eliminado" });
+    } catch (error) { //Cuando no
+        return NextResponse.json(
+            { error: `Error en el borrado: ${error.message}` }, //Manejo de errores 
             { status: 500 }
         );
     }

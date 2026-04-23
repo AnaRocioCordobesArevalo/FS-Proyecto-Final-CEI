@@ -1,64 +1,66 @@
-//La importaciones tanto de la conexión de mongoose, como de los modelos y del server.
-import { connectDB } from "@/lib/mongoose";
-import Users from "@/models/Users";
-import { NextResponse } from "next/server";
+import { connectDB } from "@/lib/mongoose";//Los modelos de los libros de la base de datos
+import Users from "@/models/Users";//Los modelos de los usuarios de la base de datos
+import Books from "@/models/Books"; //Los modelos de los libros de la base de datos
+import { NextResponse } from "next/server"; //Herramienta para enviar respuestas HTTP
 
-
-//PUT y DELETE, esta separado del GET y del PUT
-
-// Actualizar un usuario -> PUT /api/users/ en Postman buscar el id, obteniendo mediante el GET
+// Actualizar estado -> PUT /api/users/id 
+// Es importante poner en el Postman: la url/api/users/id para que busque desde la id y actualice
 export async function PUT(request, { params }) {
     try {
         await connectDB();
-        const { id } = await params; // await params
+        const { id } = await params;
         const body = await request.json();
-        const updatedUser = await Users.findByIdAndUpdate( //busca la id
-            id,
-            {
-                name: body.name,
-                email: body.email,
-                password: body.password,
-                is_admin: body.is_admin,   //Estructura de la base de datos, es decir, el modelo y en este caso, lo parametros que 
-                //que debe de actualizar
-            },
-            { new: true }
-        );
-        //En el caso, de que no se encuentre el usuario
-        if (!updatedUser) {
-            return NextResponse.json(
-                { error: "Usuario no encontrado" }, //Manejo de errores
-                { status: 404 }
-            );
+        //Obtener el usuario que hace la petición (inyectado por tu proxy)
+        const userData = request.headers.get("user");
+        //En el caso de que no se  haya autentificado
+        if (!userData) return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+        const currentUser = JSON.parse(userData);
+        // Seguridad: Solo el dueño del perfil o un Admin pueden editar
+        if (currentUser.id !== id && !currentUser.is_admin) {
+            //En el caso de que no este autorizado
+            return NextResponse.json({ error: "No autorizado" }, { status: 403 });
         }
-
+        //Preparar datos a actualizar (evitamos que un usuario normal se haga admin a sí mismo)
+        const updateData = {
+            name: body.name,
+            email: body.email,
+        };
+        if (body.password) updateData.password = body.password;
+        // Solo un admin puede cambiar el rango de is_admin
+        if (currentUser.is_admin) updateData.is_admin = body.is_admin;
+        const updatedUser = await Users.findByIdAndUpdate(id, updateData, { new: true }).select("-password");
+        //En el caso de que no se haya encontrado el usuario
+        if (!updatedUser) return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 }); //Manejo de errores
         return NextResponse.json(updatedUser);
-    } catch (error) {
-        return NextResponse.json(
-            { error: `Error al actualizar: ${error.message}` }, //Manejo de errores
-            { status: 500 }
-        );
+    } catch (error) { //En el caso de que no se pueda actualizar
+        return NextResponse.json({ error: `Error al actualizar: ${error.message}` }, { status: 500 }); //Manejo de errores
     }
 }
-
-// Borrar un usuario -> DELETE /api/users/ en Postman buscar el id, obteniendo mediante el GET
-export async function DELETE(request, { params }) { //Request es importante para las peticiones
+// Cancelar/borrar intercambio ->DELETE /api/users/id
+// Es importante poner en el Postman: la url/api/users/id para que busque desde la id y borre
+export async function DELETE(request, { params }) {
     try {
         await connectDB();
-        const { id } = await params; //await params 
-        const deletedUser = await Users.findByIdAndDelete(id);  // para que busque con la ide y elimine
-        //En el caso de que no se encuentre el usuario
-        if (!deletedUser) {
-            return NextResponse.json(
-                { error: "Usuario no encontrado" },
-                { status: 404 } //Manejo de errores
-            );
+        const { id } = await params;
+        // Validar quién intenta borrar
+        const userData = request.headers.get("user");
+        //En el caso de que no se haya autentificado
+        if (!userData) return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+        const currentUser = JSON.parse(userData);
+        //Seguridad: Solo Admin o el propio usuario
+        if (currentUser.id !== id && !currentUser.is_admin) { 
+            //En el caso de que no se tenga permisos
+            return NextResponse.json({ error: "No tienes permisos" }, { status: 403 }); 
         }
-        //En el caso de eliminar a un usuario
-        return NextResponse.json({ message: "Usuario eliminado correctamente" });
-    } catch (error) {
-        return NextResponse.json(
-            { error: `Error al borrar: ${error.message}` },
-            { status: 500 } //Manejo de errores
-        );
+        //BORRADO EN CASCADA: Borramos sus libros antes que al usuario
+        await Books.deleteMany({ owner: id });
+        //Borrar el usuario
+        const deletedUser = await Users.findByIdAndDelete(id); //Busca por el id y luego lo borrar
+        //En el caso de que no se  
+        if (!deletedUser) return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 }); //Manejo de errores 
+        //En el caso de que se haya eliminado correctamente el usuario y el libro
+        return NextResponse.json({ message: "Usuario y sus libros eliminados correctamente" });
+    } catch (error) { //En el caso de que haya un errore al borrar
+        return NextResponse.json({ error: `Error al borrar: ${error.message}` }, { status: 500 }); //Manejo de errores 
     }
 }

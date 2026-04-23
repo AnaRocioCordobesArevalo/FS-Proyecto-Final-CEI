@@ -1,7 +1,7 @@
 //La importaciones tanto de la conexión de mongoose, como de los modelos y del server.
-import { connectDB } from "@/lib/mongoose";
-import Category from "@/models/Category";
-import { NextResponse } from "next/server";
+import { connectDB } from "@/lib/mongoose";//La conexión de la base de datos, es decir, el mongoose
+import Category from "@/models/Category"; //Los modelos de las categorias de la base de datos
+import { NextResponse } from "next/server";//Herramienta para enviar respuestas HTTP
 
 // Actualizar categoría -> PUT /api/categories/id 
 //Importante: en Postman poner la url/api/categories/id, que queremos  actualizar
@@ -41,16 +41,16 @@ export async function DELETE(request, { params }) {
         await connectDB();
         const { id } = await params;
         const deletedCategory = await Category.findByIdAndDelete(id);
-
+        //En el caso de que no se encuentre la categoria
         if (!deletedCategory) {
             return NextResponse.json(
                 { error: "Categoría no encontrada" },
                 { status: 404 } //Manejo de errores
             );
         }
-
+        //En el caso de que si se ha elimnado la categoria
         return NextResponse.json({ message: "Categoría eliminada correctamente" });
-    } catch (error) {
+    } catch (error) { //En el caso de que no se haya podido borrar la categoria
         return NextResponse.json(
             { error: `Error al borrar: ${error.message}` },
             { status: 500 } //Manejo de errores

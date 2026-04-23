@@ -1,8 +1,8 @@
-import { connectDB } from "@/lib/mongoose";
-import Exchange from "@/models/Exchange";
-import Users from "@/models/Users";
-import Books from "@/models/Books";
-import { NextResponse } from "next/server";
+import { connectDB } from "@/lib/mongoose";//Los modelos de los libros de la base de datos
+import Exchange from "@/models/Exchange";//Los modelos de los intercambios de la base de datos
+import Users from "@/models/Users";//Los modelos de los usuarios de la base de datos
+import Books from "@/models/Books";//Los modelos de los libros de la base de datos
+import { NextResponse } from "next/server";//Herramienta para enviar respuestas HTTP
 
 // Actualizar estado -> PUT /api/exchanges/id 
 // Es importante poner en el Postman: la url/api/exchanges/id para que busque desde la id y actualice
@@ -23,13 +23,14 @@ export async function PUT(request, { params }) { //Es importante el request para
         // En el caso de que no encuentre el intercambio
         if (!updatedExchange) {
             return NextResponse.json(
+                //En el caso de que no se encuentre el intercambio
                 { error: "Intercambio no encontrado" },
                 { status: 404 }
             );
         }
         //En el caso de que no actualice
         return NextResponse.json(updatedExchange);
-    } catch (error) {
+    } catch (error) { //En el caso donde haya un error al actualizar
         return NextResponse.json(
             { error: `Error al actualizar: ${error.message}` },
             { status: 500 }
@@ -43,19 +44,19 @@ export async function DELETE(request, { params }) { //Es importante el request p
     try {
         await connectDB();
         const { id } = await params;
-        const deletedExchange = await Exchange.findByIdAndDelete(id);
+        const deletedExchange = await Exchange.findByIdAndDelete(id); //Busca la id y la borra
 
         if (!deletedExchange) {
-            return NextResponse.json(
-                { error: "Intercambio no encontrado" },
+            return NextResponse.json( //En el caso de que no se haya encontrado el intercambio
+                { error: "Intercambio no encontrado" }, //Manejo de errores 
                 { status: 404 }
             );
         }
-
+        //En el caso de que se haya eliminado correctamente
         return NextResponse.json({ message: "Intercambio eliminado correctamente" });
-    } catch (error) {
+    } catch (error) { //En el caso de que suceda un error al borrar 
         return NextResponse.json(
-            { error: `Error al borrar: ${error.message}` },
+            { error: `Error al borrar: ${error.message}` }, //Manejo de errores 
             { status: 500 }
         );
     }

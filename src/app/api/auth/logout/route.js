@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";   //Permite definir una lógica 
+import { NextResponse } from "next/server";   //Herramienta para enviar respuestas HTTP
 
 //Escribe que se ha cerrado  
 export async function POST() {

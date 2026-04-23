@@ -1,9 +1,9 @@
 //La importaciones tanto de la conexión de mongoose, como de los modelos y del server.
-import { connectDB } from "@/lib/mongoose";
-import Exchange from "@/models/Exchange";
-import Users from "@/models/Users";
-import Books from "@/models/Books";
-import { NextResponse } from "next/server";
+import { connectDB } from "@/lib/mongoose";//Los modelos de los libros de la base de datos
+import Exchange from "@/models/Exchange"; //Los modelos de los intercambios de la base de datos
+import Users from "@/models/Users"; //Los modelos de los usuarios de la base de datos
+import Books from "@/models/Books"; //Los modelos de los libros de la base de datos
+import { NextResponse } from "next/server"; //Herramienta para enviar respuestas HTTP
 
 
 //La busqueda de los intercambios que se hace
@@ -18,6 +18,7 @@ export async function GET() {
         return NextResponse.json(exchanges);
     } catch (error) { //Manejo de errores 
         return NextResponse.json(
+            //En el caso de que no se pueda cargar los intercambios
             { error: "Error al cargar los intercambios" },
             { status: 500 }
         );
@@ -37,7 +38,8 @@ export async function POST(request) { //el request para las peticiones
         return NextResponse.json(newExchange, { status: 201 });
     } catch (error) { //Manejo de errores
         return NextResponse.json(
-            { error: `Error al crear intercambio: ${error.message}` },
+            //En el caso de que haya un error 
+            { error: `Error al crear intercambio: ${error.message}` }, //Manejo de errores 
             { status: 500 }
         );
     }

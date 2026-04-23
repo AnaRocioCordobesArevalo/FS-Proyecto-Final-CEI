@@ -1,30 +1,45 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation"; // Importamos usePathname
+import { useRouter, usePathname } from "next/navigation";
 
 export default function Header() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [user, setUser] = useState(null); // Guardamos los datos del usuario
     const [showDropdown, setShowDropdown] = useState(false);
     const router = useRouter();
-    const pathname = usePathname(); // Esto detecta cada vez que cambias de página
+    const pathname = usePathname();
 
-    const checkAuth = () => {
+    const checkAuth = async () => {
         const token = document.cookie.split('; ').find(row => row.startsWith('token='));
-        setIsLoggedIn(!!token);
+        
+        if (token) {
+            setIsLoggedIn(true);
+            // Si hay token pero no tenemos datos del usuario, los pedimos
+            if (!user) {
+                try {
+                    const res = await fetch("/api/auth/me");
+                    if (res.ok) {
+                        const data = await res.json();
+                        setUser(data.user); // Aquí guardamos si es_admin o no
+                    }
+                } catch (error) {
+                    console.error("Error verificando usuario:", error);
+                }
+            }
+        } else {
+            setIsLoggedIn(false);
+            setUser(null);
+        }
     };
 
-    // Comprobar cada vez que cambia la ruta
     useEffect(() => {
         checkAuth();
     }, [pathname]);
 
-    // Comprobar al montar el componente
     useEffect(() => {
         checkAuth();
-        
-        // Opcional: un pequeño intervalo por si el router.push falla en refrescar
-        const interval = setInterval(checkAuth, 1000);
+        const interval = setInterval(checkAuth, 5000); // Comprobación cada 5s
         return () => clearInterval(interval);
     }, []);
 
@@ -32,6 +47,7 @@ export default function Header() {
         document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
         localStorage.removeItem("token");
         setIsLoggedIn(false);
+        setUser(null);
         setShowDropdown(false);
         router.push("/login");
         router.refresh();
@@ -44,17 +60,23 @@ export default function Header() {
             </Link>
 
             <div className="flex items-center gap-8">
-                {/* BIBLIOTECA: Solo visible si hay sesión */}
                 {isLoggedIn && (
                     <Link href="/books" className="text-[10px] uppercase tracking-[0.3em] text-gray-400 hover:text-white transition-colors">
                         Biblioteca
                     </Link>
                 )}
 
+                {/* BOTÓN ADMIN: Solo visible si isLoggedIn Y user.is_admin es true */}
+                {isLoggedIn && user?.is_admin && (
+                    <Link href="/admin" className="text-[10px] uppercase tracking-[0.3em] text-red-600 font-bold hover:text-white transition-colors">
+                        Panel Admin
+                    </Link>
+                )}
+
                 {isLoggedIn ? (
                     <div className="flex items-center gap-6">
                         <div className="relative">
-                            <button 
+                            <button
                                 onClick={() => setShowDropdown(!showDropdown)}
                                 className="text-[10px] uppercase tracking-[0.3em] text-white font-bold hover:opacity-70 transition-opacity"
                             >
@@ -67,22 +89,34 @@ export default function Header() {
                                         href="/profile" 
                                         onClick={() => setShowDropdown(false)}
                                         className="block px-6 py-4 text-[9px] uppercase tracking-widest text-gray-400 hover:bg-white hover:text-black transition-all"
-                                    >
+                                    >   
                                         Mi Perfil
                                     </Link>
-                                    <button 
+                                    
+                                    {/* Link extra de Admin dentro del dropdown por si quieres tenerlo recogido */}
+                                    {user?.is_admin && (
+                                        <Link 
+                                            href="/admin" 
+                                            onClick={() => setShowDropdown(false)}
+                                            className="block px-6 py-4 text-[9px] uppercase tracking-widest text-red-500 hover:bg-red-500 hover:text-white transition-all border-t border-gray-900"
+                                        >   
+                                            Admin Usuarios
+                                        </Link>
+                                    )}
+
+                                    <button
                                         onClick={handleLogout}
-                                        className="w-full text-left px-6 py-4 text-[9px] uppercase tracking-widest text-red-500 hover:bg-red-500 hover:text-white transition-all border-t border-gray-900"
+                                        className="w-full text-left px-6 py-4 text-[9px] uppercase tracking-widest text-gray-500 hover:bg-red-500 hover:text-white transition-all border-t border-gray-900"
                                     >
-                                        Cerrar Sesión
+                                        Cerrar Sesión  
                                     </button>
                                 </div>
                             )}
                         </div>
-                        
+                            
                         <Link href="/add-book" className="bg-white text-black px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-gray-200 transition-all">
                             Publicar
-                        </Link>
+                        </Link> 
                     </div>
                 ) : (
                     <Link href="/login" className="bg-white text-black px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-gray-200 transition-all">

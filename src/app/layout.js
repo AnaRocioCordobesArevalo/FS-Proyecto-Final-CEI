@@ -3,7 +3,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
-// 2. Definir las variables de las fuentes (ESTO ES LO QUE FALTA)
+//Definir las variables de las fuentes (ESTO ES LO QUE FALTA)
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -26,7 +26,7 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
         suppressHydrationWarning={true}
       >
-        <Header />
+        <Header /> 
         <main className="flex-grow">{children}</main>
         <Footer />
       </body>
