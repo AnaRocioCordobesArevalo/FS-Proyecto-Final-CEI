@@ -1,5 +1,5 @@
 "use client"; //Para los hooks 
-import { useState, useEffect } from "react";
+import { useState, useEffect } from "react"; // Hooks de React para manejar el estado y efectos secundarios
 import { useRouter } from "next/navigation";  // Hook para redirigir al usuario 
 
 export default function AddBookPage() {
@@ -16,7 +16,7 @@ export default function AddBookPage() {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const res = await fetch("/api/categories"); //Petición de la api de categorias 
+                const res = await fetch("/api/categories"); //Peticion de la api de categorias 
                 const data = await res.json();
                 //Validamos que la respuesta sea un array antes de guardarla
                 setCategories(Array.isArray(data) ? data : []);
@@ -121,7 +121,7 @@ export default function AddBookPage() {
                             ))}
                         </select>
                     </div>
-                    {/* SELECCIÓN DE IMAGEN RESPONSIVE (FUNCIONA)*/}
+                    {/* SELECCION DE IMAGEN RESPONSIVE (FUNCIONA)*/}
                     <div className="border border-dashed border-gray-800 p-4 md:p-8 rounded-lg text-center bg-black/40 group hover:border-gray-600 transition-colors">
                         <label className="block text-[8px] md:text-[9px] uppercase tracking-[0.3em] text-gray-500 font-bold mb-4 cursor-pointer">
                             Subir Portada

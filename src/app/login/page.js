@@ -48,7 +48,7 @@ export default function LoginPage() {
             {/* CONTENEDOR PRINCIPAL */}
             <div className="w-full max-w-md bg-[#0a0a0a] border border-gray-900 rounded-2xl p-10 shadow-2xl">
                 
-                {/* CABECERA: Título con diseño de marca*/}
+                {/* CABECERA*/}
                 <div className="text-left mb-10 border-l border-white pl-5">
                     <h1 className="font-serif-logo text-3xl mb-1 text-white">Entrar</h1>
                     <p className="text-[9px] uppercase tracking-[0.4em] text-gray-500 font-bold">

@@ -1,11 +1,11 @@
-"use client";
-import Link from "next/link";
+"use client"; //permite que se usar los hooks 
+import Link from "next/link"; //Componente de optimización entre las páginas
 
 export default function HomePage() {
     return (
         <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
             
-            {/* --- SECCIÓN HERO (IMPACTO VISUAL) --- */}
+            {/* SECCIÓN(IMPACTO VISUAL) */}
             <section className="relative h-[90vh] flex items-center justify-center overflow-hidden px-6">
                 <div className="z-10 text-center">
                     <div className="mb-6 inline-block border border-gray-800 px-4 py-1 rounded-full">
@@ -39,20 +39,19 @@ export default function HomePage() {
                     </div>
                 </div>
 
-                {/* Decoración de fondo (Sutil) */}
+                {/* Decoración de fondo */}
                 <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[120px]"></div>
                 </div>
             </section>
 
-            {/* --- SECCIÓN: CÓMO FUNCIONA (SISTEMA DE 3 PASOS) --- */}
+            {/* SECCIÓN: CÓMO FUNCIONA (SISTEMA DE 3 PASOS) */}
             <section className="py-32 px-8 border-t border-gray-900 bg-[#050505]">
                 <div className="max-w-7xl mx-auto">
                     <div className="text-left mb-20 border-l border-white pl-6">
                         <h2 className="font-serif-logo text-4xl md:text-5xl mb-2">El Concepto</h2>
                         <p className="text-[10px] uppercase tracking-[0.4em] text-gray-500 font-bold">Tres pasos para tu próximo libro</p>
                     </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
                         <div className="group">
                             <span className="text-4xl font-serif-logo text-gray-800 group-hover:text-white transition-colors duration-500">01</span>
@@ -61,7 +60,6 @@ export default function HomePage() {
                                 Sube esos libros que ya leíste y dales una nueva vida. Tu biblioteca personal es tu moneda de cambio.
                             </p>
                         </div>
-
                         <div className="group">
                             <span className="text-4xl font-serif-logo text-gray-800 group-hover:text-white transition-colors duration-500">02</span>
                             <h3 className="text-lg font-bold mt-4 mb-3 uppercase tracking-wider">Propón</h3>
@@ -70,7 +68,6 @@ export default function HomePage() {
                                 Encuentra un ejemplar que desees y ofrece uno de los tuyos. Intercambios directos, sin complicaciones.
                             </p>
                         </div>
-
                         <div className="group">
                             <span className="text-4xl font-serif-logo text-gray-800 group-hover:text-white transition-colors duration-500">03</span>
                             <h3 className="text-lg font-bold mt-4 mb-3 uppercase tracking-wider">Transforma</h3>
@@ -82,7 +79,7 @@ export default function HomePage() {
                 </div>
             </section>
 
-            {/* --- SECCIÓN: CTA FINAL --- */}
+            {/* SECCIÓN: CTA FINAL */}
             <section className="py-40 px-8 text-center bg-black">
                 <div className="max-w-3xl mx-auto">
                     <h2 className="font-serif-logo text-5xl md:text-6xl mb-8">

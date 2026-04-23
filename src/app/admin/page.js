@@ -1,5 +1,5 @@
 "use client";//Para los hooks 
-import { useState, useEffect } from "react";
+import { useState, useEffect } from "react"; // Hooks de React para manejar el estado y efectos secundarios
 import { useRouter } from "next/navigation"; // Hook para redirigir al usuario 
 
 //Zona que no hay que tocar
@@ -12,16 +12,16 @@ export default function AdminDashboard() {
     useEffect(() => {
         const checkAdminAndLoad = async () => {
             try {
-                //Verificación de identidad: Consultamos la API 
+                //Verificacion de identidad: Consultamos la API 
                 const resAuth = await fetch("/api/auth/me");
                 const authData = await resAuth.json();
-                // SEGURIDAD CRÍTICA(Zona de Peligro): Se verifica si es administrador o no con el booleano que tenemos
+                // SEGURIDAD CRITICA(Zona de Peligro): Se verifica si es administrador o no con el booleano que tenemos
                 //y en el caso de que no se admin, pues es usuario o una cosa u otra
                 if (!resAuth.ok || !authData.user?.is_admin) {
-                    router.push("/books"); // Redirección automática a la biblioteca
+                    router.push("/books"); // Redirección automatica a la biblioteca
                     return;
                 }
-                // Si llegamos aquí, es que el usuario es Admin. Guardamos sus datos.
+                // Si llegamos aqui, es que el usuario es Admin. Guardamos sus datos.
                 setCurrentUser(authData.user);
                 //Carga de datos: Una vez confirmado el admin, pedimos todos los usuarios, es decir, el GET de users
                 const resUsers = await fetch("/api/users");
@@ -37,7 +37,7 @@ export default function AdminDashboard() {
         checkAdminAndLoad();
     }, [router]); // Se ejecuta al montar el componente
 
-    // --- LÓGICA DE ELIMINACIÓN ---
+    // --- LOGICA DE ELIMINACION ---
     const handleDeleteUser = async (id, name) => {
         // Confirmación nativa del navegador para evitar borrados accidentales
         if (!confirm(`¿EXPULSAR A ${name.toUpperCase()}? Se borrarán todos sus libros.`)) return;
@@ -96,7 +96,7 @@ export default function AdminDashboard() {
                                     {u.email}
                                 </span>
                             </div>
-                            {/* Bloque de Datos Técnicos y Acciones */}
+                            {/* Bloque de Datos Tecnicos y Acciones */}
                             <div className="flex flex-row items-center justify-between md:justify-end w-full md:w-auto gap-4 md:gap-12 border-t md:border-t-0 border-gray-900 pt-4 md:pt-0">
                                 {/* Mostramos el ID de MongoDB para poder identificarlo */}
                                 <div className="text-left md:text-right">
@@ -106,7 +106,7 @@ export default function AdminDashboard() {
                                         <span className="hidden md:inline">{u._id}</span>
                                     </p>
                                 </div>
-                                {/* BOTÓN DE ACCIÓN: (porque me he borrado a mi misma y la he liado)
+                                {/* BOTON DE ACCION: (porque me he borrado a mi misma y la he liado)
                                     IMPORTANTE: u._id !== currentUser?.id evita que el admin se borre a sí mismo por error. 
                                 */}
                                 {u._id !== currentUser?.id && (
