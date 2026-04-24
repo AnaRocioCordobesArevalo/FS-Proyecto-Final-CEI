@@ -1,23 +1,25 @@
-"use client";
-import { useState, useEffect } from "react";
-import Link from "next/link";
+"use client"; //permite que se usar los hooks 
+import { useState, useEffect } from "react"; // Hooks de React para manejar el estado y efectos secundarios
+import Link from "next/link"; //Componente de optimización entre las páginas
 
 export default function BooksGallery() {
+    //ESTADOS DE DATOS
     const [books, setBooks] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState(null);  // Usuario autenticado
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("");
 
-    // --- NUEVOS ESTADOS PARA EL INTERCAMBIO ---
-    const [modal, setModal] = useState(null);      // Libro que quiero solicitar
-    const [myBooks, setMyBooks] = useState([]);    // Mis libros para ofrecer
-    const [offering, setOffering] = useState(""); // ID del libro seleccionado para ofrecer
-    const [sending, setSending] = useState(false);
-
+    // NUEVOS ESTADOS PARA EL INTERCAMBIO
+    const [modal, setModal] = useState(null);      // Libro que queremos pedir
+    const [myBooks, setMyBooks] = useState([]);    // Lista de libros que el usuario actual puede ofrecer
+    const [offering, setOffering] = useState(""); //ID del libro que el usuario elige dar a cambio
+    const [sending, setSending] = useState(false); //Estado de carga para el boton de envio
+    //Libros, Categorías y Perfil de usuario
     const loadData = async () => {
         try {
+            // Ejecutamos las peticiones en paralelo para mayor velocidad
             const [resBooks, resCats, resUser] = await Promise.all([
                 fetch("/api/books", { credentials: "include" }),
                 fetch("/api/categories", { credentials: "include" }),
@@ -30,7 +32,7 @@ export default function BooksGallery() {
             if (resUser.ok) {
                 const userData = await resUser.json();
                 setUser(userData.user);
-                
+
                 // FILTRAR MIS LIBROS: Guardamos los libros que me pertenecen
                 const myOwned = (Array.isArray(dataBooks) ? dataBooks : []).filter(
                     b => (b.owner?._id || b.owner) === userData.user._id
@@ -52,28 +54,28 @@ export default function BooksGallery() {
         loadData();
     }, []);
 
-    // --- LÓGICA DE ENVÍO DE INTERCAMBIO ---
+    // LÓGICA DE ENVÍO DE INTERCAMBIO-HA SIDO COMPLICADO
     const handleExchange = async () => {
         if (!offering) return alert("Selecciona un libro para ofrecer");
         setSending(true);
         try {
-            const res = await fetch("/api/exchanges", {
+            const res = await fetch("/api/exchanges", { 
                 method: "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    user_to: modal.owner._id,
-                    book_offered: offering,
-                    book_requested: modal._id,
+                    user_to: modal.owner._id, // A quien va dirigida la solicitud
+                    book_offered: offering, // Mi libro
+                    book_requested: modal._id,  // El libro que quiero
                 }),
             });
             if (res.ok) {
                 setModal(null);
                 setOffering("");
                 alert("¡Solicitud de intercambio enviada!");
-            } else {
+            } else { //En el caso de que haya un error al enviar
                 const err = await res.json();
-                alert(err.error || "Error al enviar");
+                alert(err.error || "Error al enviar"); //Manejo de errores 
             }
         } catch (e) {
             console.error(e);
@@ -81,20 +83,20 @@ export default function BooksGallery() {
             setSending(false);
         }
     };
-
+    //Para que borrer los libros que quiera el usuario
     const handleDelete = async (id, title) => {
         const confirmDelete = confirm(`¿Estás seguro de eliminar "${title}" de la biblioteca?`);
         if (!confirmDelete) return;
         try {
-            const res = await fetch(`/api/books/${id}`, {
+            const res = await fetch(`/api/books/${id}`, { //busca en la api de libros (books), borrar, es decir, DELETE
                 method: "DELETE",
-                credentials: "include", 
+                credentials: "include",
             });
             if (res.ok) {
                 setBooks(books.filter(b => b._id !== id));
             }
-        } catch (error) {
-            console.error("Error al borrar:", error);
+        } catch (error) { //En el caso de que haya un error al borrar
+            console.error("Error al borrar:", error); //Manejo de errores 
         }
     };
 
@@ -112,12 +114,12 @@ export default function BooksGallery() {
             <p className="text-gray-500 tracking-[0.3em] uppercase text-xs animate-pulse italic">Abriendo biblioteca...</p>
         </div>
     );
-
+    //FRONTED
     return (
         <div className="min-h-screen bg-black text-white p-8 md:p-16">
             <div className="max-w-7xl mx-auto">
-                
-                {/* CABECERA (Igual a la tuya) */}
+
+                {/* CABECERA*/}
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-8 border-l border-white pl-5">
                     <div>
                         <h1 className="font-serif-logo text-3xl md:text-3xl mb-0.5 tracking-tight italic">Biblioteca</h1>
@@ -128,7 +130,7 @@ export default function BooksGallery() {
                     </Link>
                 </div>
 
-                {/* FILTROS (Igual a los tuyos) */}
+                {/* FILTROS*/}
                 <div className="flex flex-col md:flex-row gap-4 mb-16">
                     <input
                         type="text"
@@ -171,14 +173,14 @@ export default function BooksGallery() {
                             <div className="flex flex-col flex-1">
                                 <h2 className="font-serif-logo text-2xl text-white mb-1 italic line-clamp-1">{book.tittle}</h2>
                                 <p className="text-[10px] uppercase tracking-[0.1em] text-gray-500 mb-6 italic">{book.author}</p>
-                                
+
                                 <div className="mt-auto flex items-center justify-between pt-4 border-t border-gray-900">
                                     <div className="flex flex-col">
                                         <span className="text-[8px] text-gray-600 uppercase mb-0.5">Propiedad de</span>
                                         <span className="text-[10px] font-bold text-gray-400 truncate w-24">{book.owner?.name || "Anónimo"}</span>
                                     </div>
-                                    
-                                    {/* BOTÓN INTERCAMBIAR ACTUALIZADO */}
+
+                                    {/* BOTÓN INTERCAMBIAR*/}
                                     <button
                                         className="bg-white text-black px-5 py-2 rounded-full text-[9px] font-black uppercase tracking-widest hover:bg-gray-200 transition-all active:scale-95"
                                         onClick={() => {
@@ -196,7 +198,7 @@ export default function BooksGallery() {
                     ))}
                 </div>
 
-                {/* --- COMPONENTE MODAL --- */}
+                {/*COMPONENTE MODA*/}
                 {modal && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
                         <div className="bg-[#0a0a0a] border border-gray-800 p-8 rounded-lg max-w-md w-full shadow-2xl">
@@ -204,9 +206,9 @@ export default function BooksGallery() {
                             <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-6 font-bold">
                                 Estás pidiendo: <span className="text-white">{modal.tittle}</span>
                             </p>
-                            
+
                             <label className="text-[9px] uppercase tracking-widest text-gray-400 block mb-2 font-black">Selecciona tu libro para ofrecer:</label>
-                            <select 
+                            <select
                                 className="w-full bg-black border border-gray-800 p-3 text-[11px] text-white uppercase tracking-widest mb-8 outline-none focus:border-white transition-colors"
                                 value={offering}
                                 onChange={(e) => setOffering(e.target.value)}
@@ -218,13 +220,13 @@ export default function BooksGallery() {
                             </select>
 
                             <div className="flex gap-4">
-                                <button 
+                                <button
                                     onClick={() => setModal(null)}
                                     className="flex-1 px-4 py-3 border border-gray-800 text-[9px] font-black uppercase tracking-widest hover:bg-white hover:text-black transition-all"
                                 >
                                     Cancelar
                                 </button>
-                                <button 
+                                <button
                                     onClick={handleExchange}
                                     disabled={sending}
                                     className="flex-1 px-4 py-3 bg-white text-black text-[9px] font-black uppercase tracking-widest hover:bg-gray-200 transition-all disabled:opacity-50"

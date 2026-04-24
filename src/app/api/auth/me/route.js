@@ -10,21 +10,21 @@ export async function GET(request) {
         // El middleware ya verificó el token y puso el payload aquí
         const userHeader = request.headers.get("user");
 
-        if (!userHeader) {
-            return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+        if (!userHeader) { //En el caso de que no este autorizado el usuario
+            return NextResponse.json({ error: "No autorizado" }, { status: 401 }); //Manejo de errores 
         }
 
         const payload = JSON.parse(userHeader);
         const user = await Users.findById(payload.id).select("-password");
 
-        if (!user) {
-            return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+        if (!user) { //En el caso de que no se haya encontrado al usuario
+            return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 }); //Manejo de errores 
         }
 
         return NextResponse.json({ user });
 
     } catch (error) {
         console.error("Error en /api/auth/me:", error.message);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: error.message }, { status: 500 }); //Manejo de errores 
     }
 }

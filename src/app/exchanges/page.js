@@ -1,7 +1,8 @@
-"use client";
-import { useState, useEffect, useRef } from "react";
+"use client"; //permite que se usar los hooks 
+import { useState, useEffect, useRef } from "react"; // Hooks de React para manejar el estado y efectos secundarios
 
 export default function ExchangesPage() {
+    //ESTADOS DE DATOS
     const [exchanges, setExchanges] = useState([]);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -9,11 +10,11 @@ export default function ExchangesPage() {
     const timerRef = useRef(null); // Para limpiar el setTimeout si el usuario navega
 
     const fetchData = async () => {
-        try {
+        try { //datos del usuario
             const userRes = await fetch("/api/auth/me");
             const userData = await userRes.json();
             if (userRes.ok) setUser(userData.user);
-
+            // todos los intercambios
             const res = await fetch("/api/exchanges");
             const data = await res.json();
             setExchanges(Array.isArray(data) ? data : []);
@@ -59,7 +60,7 @@ export default function ExchangesPage() {
     };
 
     if (loading) return <div className="p-20 text-white bg-black">Cargando...</div>;
-
+    //Fronted
     return (
         <div className="min-h-screen bg-black text-white p-10">
             <div className="max-w-4xl mx-auto flex flex-col gap-6">

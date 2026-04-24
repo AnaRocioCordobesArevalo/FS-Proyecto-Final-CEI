@@ -5,7 +5,7 @@ export default function HomePage() {
     return (
         <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
             
-            {/* SECCIÓN(IMPACTO VISUAL) */}
+            {/* SECCIÓN*/}
             <section className="relative h-[90vh] flex items-center justify-center overflow-hidden px-6">
                 <div className="z-10 text-center">
                     <div className="mb-6 inline-block border border-gray-800 px-4 py-1 rounded-full">

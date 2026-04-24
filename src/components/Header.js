@@ -1,33 +1,33 @@
-"use client";
-import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+"use client"; //permite que se usar los hooks 
+import { useState, useEffect, useRef } from "react"; // Hooks de React para manejar el estado y efectos secundarios
+import Link from "next/link"; // Hook para redireccionar al usuario
+import { useRouter, usePathname } from "next/navigation"; //Componente de optimización entre las páginas
 
 export default function Header() {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [user, setUser] = useState(null);
-    const [showDropdown, setShowDropdown] = useState(false);
+    //ESTADOS
+    const [isLoggedIn, setIsLoggedIn] = useState(false); //Si hay una sesión activa
+    const [user, setUser] = useState(null); // Datos del usuario
+    const [showDropdown, setShowDropdown] = useState(false); // Control del menú de "Cuenta"
     const router = useRouter();
-    const pathname = usePathname();
-    const userRef = useRef(null); // ← evita el closure stale
+    const pathname = usePathname(); // Detecta cambios de URL para re-verificar auth
+    const userRef = useRef(null); 
 
     const checkAuth = async () => {
         const token = document.cookie.split('; ').find(row => row.startsWith('token='));
-
+        // Extraer el token de las cookies del navegador
         if (token) {
             setIsLoggedIn(true);
-            if (!userRef.current) { // ← usamos ref, no state
+            if (!userRef.current) {
                 try {
                     const res = await fetch("/api/auth/me", {
-                        credentials: "include", // ← envía las cookies
+                        credentials: "include",
                     });
                     if (res.ok) {
                         const data = await res.json();
-                        userRef.current = data.user; // ← guardamos en ref
-                        setUser(data.user);
-                    }
+                        userRef.current = data.user;
+                    } //En el caso de que haya un error en la verificación del usuario
                 } catch (error) {
-                    console.error("Error verificando usuario:", error);
+                    console.error("Error verificando usuario:", error); //Manejo de errores 
                 }
             }
         } else {
@@ -36,29 +36,28 @@ export default function Header() {
             setUser(null);
         }
     };
-
-    // ← UN SOLO useEffect, elimina el segundo con el intervalo
+    //El disparador cada vez que el usuario cambia de página.
     useEffect(() => {
         checkAuth();
     }, [pathname]);
-
+    //Para salir de la cuenta 
     const handleLogout = () => {
         document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
         localStorage.removeItem("token");
-        userRef.current = null; // ← limpiar ref
+        userRef.current = null; 
         setIsLoggedIn(false);
         setUser(null);
         setShowDropdown(false);
         router.push("/login");
         router.refresh();
     };
-
+    //FRONTED
     return (
         <header className="bg-black py-6 px-10 flex justify-between items-center border-b border-gray-900 sticky top-0 z-[100]">
             <Link href="/" className="font-serif-logo text-2xl text-white">
                 Metamorfosis.
             </Link>
-
+            {/* NAVEGACIÓN DERECHA */}
             <div className="flex items-center gap-8">
                 {isLoggedIn && (
                     <Link href="/books" className="text-[10px] uppercase tracking-[0.3em] text-gray-400 hover:text-white transition-colors">
