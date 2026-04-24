@@ -7,7 +7,7 @@ import { authMiddleware, adminMiddleware } from "@/middlewares/auth"; // Enseña
 // Páginas que requieren inicio de sesión
 const protectedPages = ["/books", "/add-book", "/profile", "/exchanges"];
 // Rutas de API que requieren Token de usuario normal
-const protectedApiRoutes = ["/api/exchanges", "/api/categories", "/api/books"]; 
+const protectedApiRoutes = ["/api/exchanges", "/api/categories", "/api/books" , "/api/auth/me" ]; 
 // Rutas de API que requieren Token de Administrador
 const adminApiRoutes = ["/api/users"];
 export async function proxy(request) {
@@ -46,13 +46,7 @@ export async function proxy(request) {
  */
 export const config = {
     matcher: [
-        /*
-         * Coincidir con todas las rutas excepto:
-         * 1. _next/static (archivos estáticos)
-         * 2. _next/image (optimización de imágenes)
-         * 3. favicon.ico
-         * 4. Public (archivos en carpeta public como logos)
-         */
+        
         "/((?!_next/static|_next/image|favicon.ico|public).*)",
     ],
 };
