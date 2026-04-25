@@ -20,7 +20,7 @@ export default function HomePage() {
                     
                     <p className="max-w-xl mx-auto text-gray-500 text-sm md:text-base leading-relaxed tracking-wide mb-12 animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-200">
                         No solo intercambiamos libros, transformamos historias. 
-                        Únete a la comunidad de intercambio de libros más exclusiva y minimalista.
+                        Únete a la comunidad de intercambio de libros segura y minimalista.
                     </p>
 
                     <div className="flex flex-col md:flex-row items-center justify-center gap-6 animate-in fade-in slide-in-from-bottom-16 duration-1000 delay-500">
